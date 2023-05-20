@@ -3,7 +3,7 @@ import axios from 'axios'
 const AdViewAPI = {
     loadAd: async function (subid) {
         try {
-            const response = await axios.get(`https://turple-api-v1.onrender.com/loadads?subid=${subid}`)
+            const response = await axios.get(`http://localhost:8080/loadads?subid=${subid}`)
             return response.data
         } catch (error) {
             console.error(error);
@@ -11,9 +11,9 @@ const AdViewAPI = {
         }
     },
 
-    onAdSuccessfulWatch: async function (adid, subid) {
+    onAdSuccessfulWatch: async function (adid, subid, fee = 0) {
         try {
-            const response = await axios.post(`https://turple-api-v1.onrender.com/onadwatch?adid=${adid}&subid=${subid}`)
+            const response = await axios.post(`http://localhost:8080/onadwatch?adid=${adid}&subid=${subid}&fee=${fee}`)
             return response.data
         } catch (error) {
             console.error(error);
@@ -21,9 +21,9 @@ const AdViewAPI = {
         }
     },
 
-    onAdClicked: async function (adid, subid) {
+    onAdClicked: async function (adid, subid, fee = 0) {
         try {
-            const response = await axios.post(`https://turple-api-v1.onrender.com/onadclick?adid=${adid}&subid=${subid}`)
+            const response = await axios.post(`http://localhost:8080/onadclick?adid=${adid}&subid=${subid}&fee=${fee}`)
             return response.data
         } catch (error) {
             console.error(error);

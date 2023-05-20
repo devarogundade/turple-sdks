@@ -3,6 +3,7 @@
     "video.js": "^8.3.0"
   },
   "dependencies": {
-    "hls.js": "^0.12.4"
+    "hls.js": "^0.12.4",
+    "videojs-contrib-ads": "^7.3.0"
   }
 }
