@@ -4,8 +4,9 @@
             <ProgressBox />
         </div>
         <div class="ad_view" v-show="status == 'SUCCESS'">
+            <PrimaryButton v-if="!adSkipped" :text="'Skip Ad'" :width="'150px'" v-on:click="skipAd()" class="skip_btn" />
             <div class="ad_player">
-                <video ref="videoPlayer" class="video-js"></video>
+                <video :controls="adSkipped" ref="videoPlayer" class="video-js"></video>
                 <div class="content" v-if="ad">
                     <div>
                         <p class="name">{{ JSON.parse(ad.metadata).name }}</p>
@@ -23,7 +24,7 @@
 </template>
 
 <script>
-import PrimaryButton from './PrimaryButton.vue';
+import PrimaryButton from './PrimaryButton.vue'
 import ProgressBox from './ProgressBox.vue'
 import AdViewAPI from './script'
 import videojs from 'video.js'
@@ -38,28 +39,37 @@ export default {
             player: null,
             WATCHFEE: 1,
             CLICKFEE: 2.5,
+            adSkipped: false
         };
     },
     methods: {
+        skipAd: async function () {
+            this.player.src(this.src)
+            this.adSkipped = true
+            AdViewAPI.onAdSuccessfulWatch(this.ad.adId, this.subid, this.WATCHFEE)
+        },
+
         loadAd: async function () {
             this.status = "FETCHING";
             const result = await AdViewAPI.loadAd(this.subid);
             const ads = result.data
 
-            const options = {
-                autoplay: true,
-                controls: true,
-                loop: true,
-                sources: [{ src: this.src }]
-            };
-
-            videojs.registerPlugin("ads", videoJsContribAds)
-
-            this.player = videojs(this.$refs.videoPlayer, options, () => { });
-
             if (ads != null && ads.length > 0) {
                 const random = Math.floor(Math.random() * ads.length)
                 this.ad = ads[random]
+
+                const options = {
+                    autoplay: true,
+                    loop: false,
+                    sources: [{
+                        src: `https://media.thetavideoapi.com/${JSON.parse(this.ad.metadata).videoId}/master.m3u8`,
+                        type: 'application/x-mpegurl'
+                    }]
+                };
+
+                videojs.registerPlugin("ads", videoJsContribAds)
+
+                this.player = videojs(this.$refs.videoPlayer, options, () => { });
 
                 this.player.ads({ timeout: 5000 })
 
@@ -70,24 +80,19 @@ export default {
                 const context = this
 
                 this.player.on('readyforpreroll', function () {
-                    this.ads.startLinearAdMode();
                     // play your linear ad content
-                    this.src({
-                        src: `https://media.thetavideoapi.com/${JSON.parse(context.ad_viewad.metadata).videoId}/master.m3u8`,
-                        type: 'application/x-mpegurl'
-                    })
+                    this.ads.startLinearAdMode();
 
                     // send event when ad is playing to remove loading spinner
                     this.one('adplaying', function () {
-                        console.log('1');
                         this.trigger('ads-ad-started');
                     });
 
                     // resume content when all your linear ads have finished
                     this.one('adended', function () {
-                        console.log('2');
-                        // this.ads.endLinearAdMode();
-                        AdViewAPI.onAdSuccessfulWatch(this.ad.adId, this.subid, this.WATCHFEE)
+                        this.ads.endLinearAdMode();
+                        context.adSkipped = true
+                        AdViewAPI.onAdSuccessfulWatch(context.ad.adId, context.subid, this.WATCHFEE)
                     });
                 });
 
@@ -109,7 +114,7 @@ export default {
         }
         this.loadAd()
     },
-    components: { ProgressBox, PrimaryButton }
+    components: { ProgressBox, PrimaryButton, PrimaryButton }
 }
 </script>
 
@@ -142,11 +147,13 @@ export default {
 video {
     object-fit: cover;
 }
+
 .content {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
 }
+
 .name {
     margin-top: 10px;
     font-size: 16px;
@@ -161,5 +168,12 @@ video {
 .powered span {
     color: var(--primary);
     font-weight: 600;
+}
+
+.skip_btn {
+    position: absolute;
+    z-index: 5;
+    bottom: 100px;
+    right: 20px;
 }
 </style>
