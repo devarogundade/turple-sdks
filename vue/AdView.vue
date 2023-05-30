@@ -1,5 +1,6 @@
 <template>
     <div class="ad_view_container">
+        <p v-if="noads">No ADS</p>
         <div class="progress" v-show="state == 'FETCHING'">
             <ProgressBox />
         </div>
@@ -39,7 +40,8 @@ export default {
             player: null,
             WATCHFEE: 1,
             CLICKFEE: 2.5,
-            adSkipped: false
+            adSkipped: false,
+            noads: false
         };
     },
     methods: {
@@ -101,6 +103,7 @@ export default {
 
                 this.status = "SUCCESS";
             } else {
+                this.noads = true
                 console.log('No ADS');
             }
         },
