@@ -1,4 +1,7 @@
 {
+  "name": "turple-vue-sdk",
+  "version": "1.0.0",
+  "description": "Decentralized ADs Network on Theta",
   "devDependencies": {
     "video.js": "^8.3.0"
   },
